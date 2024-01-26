@@ -7,11 +7,13 @@
     "test": "jest",
     "start": "node index.js"
   },
+  "type": "module",
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "csv-parse": "^5.5.3",
+    "csv-stringify": "^6.4.5",
     "multistream": "^4.1.0",
     "pdf-parse": "^1.1.1",
     "pumpify": "^2.0.1"
