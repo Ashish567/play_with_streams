@@ -1,33 +1,35 @@
-import { createReadStream } from "fs";
+import { createReadStream, createWriteStream } from "fs";
 import path from "path";
 import { parse } from "csv-parse";
 import { FilterByPopularity } from "./filterByPopularity.js";
+import { TotalDocsProcessed } from "./totalDocsProcessed.js";
+import { PassThrough } from "stream";
+
 // import { Transform } from "stream";
 
 const csvParser = parse({
   columns: true,
   relax_quotes: true,
   escape: "\\",
-  //   ltrim: true,
-  //   rtrim: true,
+  autoParse: true,
+  encoding: "utf-8",
 });
+let bytesWritten = 0;
+const moniter = new PassThrough();
+moniter.on("data", (chunk) => {
+  bytesWritten += chunk.length;
+});
+moniter.on("finish", () => {
+  console.log(`${bytesWritten} Bytes Written.`);
+});
+moniter.write("Ended!");
+moniter.end();
 // console.log(path.resolve("./datasets/genres.csv"));
-
-// const transform = new Transform({
-//   objectMode: true,
-//   transform(chunk, encoding, callback) {
-//     try {
-//       // callback this must be call to continue
-//       const buff = Buffer.from(JSON.stringify(chunk));
-//       console.log("transform", buff);
-//       callback(null, buff);
-//     } catch (error) {
-//       callback(error);
-//     }
-//   },
-// });
 
 createReadStream(path.resolve("./datasets/shows.csv"))
   .pipe(csvParser)
   .pipe(new FilterByPopularity(200))
+  .pipe(new TotalDocsProcessed())
+  //   .pipe(createWriteStream("output.txt"));
+  .pipe(moniter)
   .pipe(process.stdout);
